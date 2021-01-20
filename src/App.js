@@ -14,12 +14,27 @@
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { createRef, useState } from 'react';
-import { Button, Card, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
+import { Button, Card, Col, Container, Form, InputGroup, OverlayTrigger, Row, Tooltip } from 'react-bootstrap';
 import { Check, PencilFill, X } from 'react-bootstrap-icons';
 import Immutable from 'immutable';
 import {v4 as uuidv4} from 'uuid';
 
 let noop = () => {};
+
+function HoverlayButton({
+  placement, // the OverlayTrigger receives these attributes pertaining to overlays
+  overlay,
+  delay,
+  transition = false, // https://github.com/react-bootstrap/react-bootstrap/issues/5519
+  children, // the children are placed in the Button
+  ...restProps // all other attributes are set on the Button
+}) {
+  return (<OverlayTrigger placement={placement} overlay={overlay} delay={delay} transition={transition}>
+    {({ref, ...triggerHandler}) => (
+        <Button ref={ref} {...triggerHandler} {...restProps}>{children}</Button>
+    )}
+  </OverlayTrigger>)
+}
 
 function YakCard({
   uuid,
@@ -79,10 +94,31 @@ function YakCard({
           <InputGroup.Append>
             {editing ?
               <>
-                <Button variant="outline-danger" key="cancel" onClick={handleCancel}><X /></Button>
-                <Button variant="success" key="save" onClick={handleSave}><Check /></Button>
+                <HoverlayButton
+                  key="cancel"
+                  overlay={<Tooltip>Cancel edits</Tooltip>}
+                  variant="outline-danger"
+                  onClick={handleCancel}
+                >
+                  <X />
+                </HoverlayButton>
+                <HoverlayButton
+                  key="save"
+                  overlay={<Tooltip>Save edits</Tooltip>}
+                  variant="success"
+                  onClick={handleSave}
+                >
+                  <Check />
+                </HoverlayButton>
               </>
-              : <Button variant="light" key="edit" onClick={handleEdit}><PencilFill /></Button>
+              : <HoverlayButton
+                key="edit"
+                overlay={<Tooltip>Edit card</Tooltip>} placement="right"
+                variant="light"
+                onClick={handleEdit}
+              >
+                <PencilFill />
+              </HoverlayButton>
             }
           </InputGroup.Append>
         </InputGroup>
@@ -152,7 +188,13 @@ function YakBoard({
           uuid={newCard}
           onSave={handleSaveCard} onCancel={handleCancelNewCard}
         />
-        : <Button block variant="outline-secondary" size="lg" onClick={handleAddCard}>+</Button>
+        : <HoverlayButton
+          overlay={<Tooltip>Add new card</Tooltip>} placement="bottom"
+          block variant="outline-secondary" size="lg"
+          onClick={handleAddCard}
+        >
+          +
+        </HoverlayButton>
         }
       </Card.Body>
     </Card>
