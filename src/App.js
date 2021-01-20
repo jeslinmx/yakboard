@@ -1,10 +1,10 @@
 // TODO:
-// - delete cards
 // - markdown side effect
 // - saving to localStorage
+// - move cards
+// - undo
 // - add lists
 // - edit list names
-// - move cards
 // - rearrange lists
 // - dark theme
 // - markdown rendering
@@ -14,26 +14,69 @@
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { createRef, useState } from 'react';
-import { Button, Card, Col, Container, Form, InputGroup, OverlayTrigger, Row, Tooltip } from 'react-bootstrap';
-import { Check, PencilFill, X } from 'react-bootstrap-icons';
+import { Button, ButtonGroup, Card, Col, Container, Form, InputGroup, Overlay, OverlayTrigger, Popover, Row, Tooltip } from 'react-bootstrap';
+import { Check, PencilFill, ThreeDotsVertical, TrashFill, X } from 'react-bootstrap-icons';
 import Immutable from 'immutable';
 import {v4 as uuidv4} from 'uuid';
 
 let noop = () => {};
 
-function HoverlayButton({
+function TooltipButton({
   placement, // the OverlayTrigger receives these attributes pertaining to overlays
-  overlay,
+  tooltip,
   delay,
+  trigger,
   transition = false, // https://github.com/react-bootstrap/react-bootstrap/issues/5519
   children, // the children are placed in the Button
   ...restProps // all other attributes are set on the Button
 }) {
-  return (<OverlayTrigger placement={placement} overlay={overlay} delay={delay} transition={transition}>
+  return (<OverlayTrigger placement={placement} overlay={<Tooltip>{tooltip}</Tooltip>} delay={delay} trigger={trigger} transition={transition}>
     {({ref, ...triggerHandler}) => (
         <Button ref={ref} {...triggerHandler} {...restProps}>{children}</Button>
     )}
-  </OverlayTrigger>)
+  </OverlayTrigger>);
+}
+
+function MoreActionsButton({
+  popoverChildren,
+  buttonChildren,
+  ...restProps
+}) {
+  let [show, setShow] = useState(false);
+  let buttonRef = createRef();
+  let popoverRef = createRef();
+
+  function handleBlur(e) {
+    if (
+      show
+      && !buttonRef.current.contains(e.relatedTarget)
+      && !popoverRef.current.contains(e.relatedTarget)
+    ) {
+      setShow(false);
+    }
+  }
+
+  // popovers don't appear as children of whatever they are children of, so:
+  // a simple OverlayTrigger with onBlur doesn't work; OverlayTriggers aren't elements, so do not process onBlur
+  // a div with onBlur surrounding an OverlayTrigger doesn't work; e.currentTarget does not contain the popover
+  // manually creating a Button and an Overlay as siblings and putting onBlur on both doesn't work; the Overlay does not contain the popover
+  // putting the onBlur on the Popover doesn't work; it's a function component
+  // putting it on a div inside the Popover works though.
+
+  return (
+    <>
+      <Button ref={buttonRef} onBlur={handleBlur} onClick={() => setShow(!show)} {...restProps}>
+        {buttonChildren}
+      </Button>
+      <Overlay target={buttonRef} show={show} placement="right" transition={false}>
+        <Popover>
+          <ButtonGroup ref={popoverRef} onBlur={handleBlur}>
+            {popoverChildren}
+          </ButtonGroup>
+        </Popover>
+      </Overlay>
+    </>
+  );
 }
 
 function YakCard({
@@ -43,6 +86,7 @@ function YakCard({
   isNew = false, // if true, the card is created in edit mode, with focus on the title field
   onSave = noop, // (cardUuid, cardData) - called when the card loses focus in editing mode, or the save button is clicked
   onCancel = noop, // (cardUuid) - called when the cancel button is clicked, or a new blank card is saved
+  onDelete = noop, // (cardUuid) - called when the delete button is clicked
 }) {
 
   let [editing, setEditing] = useState(Boolean(isNew));
@@ -75,6 +119,9 @@ function YakCard({
       handleSave();
     }
   }
+  function handleDelete() {
+    onDelete(uuid);
+  }
 
   return (
     <Card className="mb-3" onBlur={handleBlur}>
@@ -94,31 +141,29 @@ function YakCard({
           <InputGroup.Append>
             {editing ?
               <>
-                <HoverlayButton
-                  key="cancel"
-                  overlay={<Tooltip>Cancel edits</Tooltip>}
+                <TooltipButton
+                  tooltip="Cancel edits"
                   variant="outline-danger"
                   onClick={handleCancel}
-                >
-                  <X />
-                </HoverlayButton>
-                <HoverlayButton
-                  key="save"
-                  overlay={<Tooltip>Save edits</Tooltip>}
+                  children={<X />}
+                />
+                <TooltipButton
+                  tooltip="Save edits"
                   variant="success"
                   onClick={handleSave}
-                >
-                  <Check />
-                </HoverlayButton>
+                  children={<Check />}
+                />
               </>
-              : <HoverlayButton
-                key="edit"
-                overlay={<Tooltip>Edit card</Tooltip>} placement="right"
+              : <MoreActionsButton
                 variant="light"
-                onClick={handleEdit}
-              >
-                <PencilFill />
-              </HoverlayButton>
+                buttonChildren={<ThreeDotsVertical />}
+                popoverChildren={
+                  <>
+                    <TooltipButton tooltip="Edit card" variant="info" onClick={handleEdit} children={<PencilFill />} />
+                    <TooltipButton tooltip="Delete card" variant="danger" onClick={handleDelete} children={<TrashFill />} />
+                  </>
+                }
+              />
             }
           </InputGroup.Append>
         </InputGroup>
@@ -154,6 +199,7 @@ function YakBoard({
   name,
   cards,
   onSaveCard = noop, // (boardUuid, cardUuid, cardData) - called when a card on this board triggers its onSave event
+  onDeleteCard = noop, // (boardUuid, cardUuid) - called when a card on this board triggers its onDelete event
 }) {
 
   let [newCard, setNewCard] = useState(false);
@@ -168,6 +214,9 @@ function YakBoard({
   function handleCancelNewCard() {
     setNewCard(false);
   }
+  function handleDeleteCard(cardUuid) {
+    onDeleteCard(uuid, cardUuid);
+  }
 
   return (
     <Card bg="light">
@@ -180,6 +229,7 @@ function YakBoard({
             key={uuid}
             uuid={uuid} title={card.get('title')} content={card.get('content')}
             onSave={handleSaveCard}
+            onDelete={handleDeleteCard}
           />
         ).toList()}
         {newCard ?
@@ -188,13 +238,12 @@ function YakBoard({
           uuid={newCard}
           onSave={handleSaveCard} onCancel={handleCancelNewCard}
         />
-        : <HoverlayButton
-          overlay={<Tooltip>Add new card</Tooltip>} placement="bottom"
+        : <TooltipButton
+          tooltip="Add new card" placement="bottom"
           block variant="outline-secondary" size="lg"
           onClick={handleAddCard}
-        >
-          +
-        </HoverlayButton>
+          children="+"
+        />
         }
       </Card.Body>
     </Card>
@@ -207,6 +256,9 @@ function App(props) {
   function handleSaveCard(boardUuid, cardUuid, cardData) {
     setData(prevData => prevData.setIn([boardUuid, 'cards', cardUuid], cardData));
   }
+  function handleDeleteCard(boardUuid, cardUuid) {
+    setData(prevData => prevData.deleteIn([boardUuid, 'cards', cardUuid]));
+  }
 
   return (
     <Container fluid>
@@ -218,6 +270,7 @@ function App(props) {
               name={board.get('name')}
               cards={board.get('cards')}
               onSaveCard={handleSaveCard}
+              onDeleteCard={handleDeleteCard}
             />
           </Col>
         ).toList()}
