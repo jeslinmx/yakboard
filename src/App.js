@@ -13,10 +13,10 @@
 // - help page
 
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Map } from 'immutable';
 import { createRef, useState } from 'react';
-import { Badge, Button, Card, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
-import { Check, PencilSquare, X } from 'react-bootstrap-icons';
+import { Button, Card, Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
+import { Check, PencilFill, X } from 'react-bootstrap-icons';
+import Immutable from 'immutable';
 import {v4 as uuidv4} from 'uuid';
 
 let noop = () => {};
@@ -26,8 +26,8 @@ function YakCard({
   title,
   content, // content of card, will be rendered into markdown
   isNew = false, // if true, the card is created in edit mode, with focus on the title field
-  onSave = noop, // called when the card loses focus in editing mode, or the save button is clicked
-  onCancel = noop, // called when the cancel button is clicked, or a new blank card is saved
+  onSave = noop, // (cardUuid, cardData) - called when the card loses focus in editing mode, or the save button is clicked
+  onCancel = noop, // (cardUuid) - called when the cancel button is clicked, or a new blank card is saved
 }) {
 
   let [editing, setEditing] = useState(Boolean(isNew));
@@ -47,7 +47,7 @@ function YakCard({
       onCancel(uuid);
     }
     else {
-      onSave(uuid, Map({
+      onSave(uuid, Immutable.Map({
         title: titleInput.current.value,
         content: contentInput.current.value,
       }));
@@ -66,16 +66,23 @@ function YakCard({
       <Card.Header>
         <InputGroup>
           {editing ?
-            <Form.Control type="text" key="editing" autoFocus={isNew} placeholder="Title" defaultValue={title} ref={titleInput} />
-            : <Form.Control type="text" key="static" plaintext readOnly value={title} />
+            <Form.Control
+              type="text"
+              key="editing" autoFocus={isNew} placeholder="Title" defaultValue={title}
+              ref={titleInput}
+            />
+            : <Form.Control
+              type="text"
+              key="static" plaintext readOnly value={title}
+            />
           }
           <InputGroup.Append>
             {editing ?
               <>
                 <Button variant="outline-danger" key="cancel" onClick={handleCancel}><X /></Button>
-                <Button variant="outline-success" key="save" onClick={handleSave}><Check /></Button>
+                <Button variant="success" key="save" onClick={handleSave}><Check /></Button>
               </>
-              : <Button variant="light" key="edit" onClick={handleEdit}><PencilSquare /></Button>
+              : <Button variant="light" key="edit" onClick={handleEdit}><PencilFill /></Button>
             }
           </InputGroup.Append>
         </InputGroup>
@@ -84,7 +91,12 @@ function YakCard({
       {(content || editing) ?
         <Card.Body>
           {editing ?
-            <Form.Control as="textarea" autoFocus={!isNew} rows={4} placeholder="Details" defaultValue={content} ref={contentInput} />
+            <Form.Control
+              as="textarea" rows={4}
+              placeholder="Details" defaultValue={content}
+              autoFocus={!isNew}
+              ref={contentInput}
+            />
             : <>
               <Card.Text>{content}</Card.Text>
               {/* <Card.Text>
@@ -101,24 +113,20 @@ function YakCard({
   );
 }
 
-function YakBoard(props) {
-  // props:
-  // uuid
-  // name
-  // cards - OrderedMap of cardUuid: {title, content}
-  // onSaveCard(boardUuid, cardUuid, cardData) - called when a card on this board triggers its onSave event
+function YakBoard({
+  uuid,
+  name,
+  cards,
+  onSaveCard = noop, // (boardUuid, cardUuid, cardData) - called when a card on this board triggers its onSave event
+}) {
 
   let [newCard, setNewCard] = useState(false);
-  let tempUuid;
 
   function handleAddCard() {
     setNewCard(uuidv4());
   }
   function handleSaveCard(cardUuid, cardData) {
-    console.log(tempUuid);
-    if (props.onSaveCard) {
-      props.onSaveCard(props.uuid, cardUuid, cardData);
-    }
+    onSaveCard(uuid, cardUuid, cardData);
     setNewCard(false);
   }
   function handleCancelNewCard() {
@@ -128,20 +136,22 @@ function YakBoard(props) {
   return (
     <Card bg="light">
       <Card.Header>
-        <Card.Title className="text-center">{props.name}</Card.Title>
+        <Card.Title className="text-center">{name}</Card.Title>
       </Card.Header>
       <Card.Body>
-        {props.cards.map((card, uuid) => 
+        {cards.map((card, uuid) => 
           <YakCard
             key={uuid}
-            uuid={uuid}
-            title={card.get('title')}
-            content={card.get('content')}
+            uuid={uuid} title={card.get('title')} content={card.get('content')}
             onSave={handleSaveCard}
           />
         ).toList()}
         {newCard ?
-        <YakCard isNew key={newCard} uuid={newCard} onSave={handleSaveCard} onCancel={handleCancelNewCard} />
+        <YakCard
+          isNew key={newCard}
+          uuid={newCard}
+          onSave={handleSaveCard} onCancel={handleCancelNewCard}
+        />
         : <Button block variant="outline-secondary" size="lg" onClick={handleAddCard}>+</Button>
         }
       </Card.Body>
