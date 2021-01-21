@@ -1,6 +1,5 @@
 // TODO:
 // - markdown side effect
-// - saving to localStorage
 // - move cards
 // - undo
 // - add lists
@@ -13,12 +12,24 @@
 // - help page
 
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { useState } from 'react';
+import { fromJS, Seq } from 'immutable';
+import { useEffect, useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
+import { v4 as uuidv4 } from 'uuid';
 import YakBoard from './YakBoard';
 
 function App(props) {
-  let [data, setData] = useState(props.initialData);
+  let [data, setData] = useState(fromJS(
+    (
+      JSON.parse(localStorage.getItem('boards'))
+      || Seq(['Waiting', 'In Progress', 'Completed']).map(name => ({name, cards: {}})).toKeyedSeq().flip().map(value => uuidv4()).flip().toJS()
+    ),
+    (key, value) => (!key || key === 'cards') ? value.toOrderedMap() : value.toMap()
+  ));
+
+  useEffect(() => {
+    localStorage.setItem('boards', JSON.stringify(data.toJS()));
+  }, [data]);
 
   function handleSaveCard(boardUuid, cardUuid, cardData) {
     setData(prevData => prevData.setIn([boardUuid, 'cards', cardUuid], cardData));
@@ -29,7 +40,7 @@ function App(props) {
 
   return (
     <Container fluid>
-      <Row className="mt-3">
+      <Row className='mt-3'>
         {data.map((board, uuid) => 
           <Col xs={12} md={6} lg={4} xl={3} key={uuid}>
             <YakBoard
