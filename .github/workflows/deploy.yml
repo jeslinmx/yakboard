@@ -1,0 +1,19 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2.1.4
+      - run: npm install
+      - run: npm run build
+      - uses: crazy-max/ghaction-github-pages@v2.2.0
+        with:
+          build_dir: build
+          jekyll: false
