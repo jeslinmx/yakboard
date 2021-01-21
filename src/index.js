@@ -1,46 +1,46 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
-import Immutable from 'immutable';
 import {v4 as uuidv4} from 'uuid';
 import reportWebVitals from './reportWebVitals';
+import { Map, OrderedMap } from 'immutable';
 
-let waiting = Immutable.OrderedMap([
-  [uuidv4(), Immutable.Map({
+let waiting = OrderedMap([
+  [uuidv4(), Map({
     title: "Test card 1",
     content: "test card 1 content",
   })],
-  [uuidv4(), Immutable.Map({
+  [uuidv4(), Map({
     title: "Test card 2",
     content: "test card 2 content",
   })],
-  [uuidv4(), Immutable.Map({
+  [uuidv4(), Map({
     title: "Test card 3",
     content: "test card 3 has a lot more content content content",
   })],
 ]);
-let progress = Immutable.OrderedMap([
-  [uuidv4(), Immutable.Map({
+let progress = OrderedMap([
+  [uuidv4(), Map({
     title: "ughhhhh",
     content: "currently in progress...",
   })],
 ]);
-let completed = Immutable.OrderedMap([
-  [uuidv4(), Immutable.Map({
+let completed = OrderedMap([
+  [uuidv4(), Map({
     title: "all done!",
     content: "now time to do some more...",
   })],
 ]);
-let boards = Immutable.OrderedMap([
-  [uuidv4(), Immutable.Map({
+let boards = OrderedMap([
+  [uuidv4(), Map({
     name: "Waiting",
     cards: waiting,
   })],
-  [uuidv4(), Immutable.Map({
+  [uuidv4(), Map({
     name: "In progress",
     cards: progress,
   })],
-  [uuidv4(), Immutable.Map({
+  [uuidv4(), Map({
     name: "Completed",
     cards: completed,
   })],
