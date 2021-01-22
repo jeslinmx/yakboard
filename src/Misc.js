@@ -50,7 +50,7 @@ function MoreActionsButton({
       <Button ref={buttonRef} onBlur={handleBlur} onClick={() => setShow(!show)} {...restProps}>
         {buttonChildren}
       </Button>
-      <Overlay target={buttonRef} show={show} placement="right" transition={false}>
+      <Overlay target={buttonRef} show={show} placement="left" transition={false}>
         <Popover>
           <ButtonGroup ref={popoverRef} onBlur={handleBlur}>
             {popoverChildren}

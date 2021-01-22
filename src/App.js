@@ -6,6 +6,7 @@
 // - edit list names
 // - rearrange lists
 // - dark theme
+// - shameless self-promotion
 // - markdown rendering
 // - tags rendering
 // - checkbox 2-way flow
@@ -40,7 +41,7 @@ function App(props) {
 
   return (
     <Container fluid>
-      <Row className='mt-3'>
+      <Row>
         {data.map((board, uuid) => 
           <Col xs={12} md={6} lg={4} xl={3} key={uuid}>
             <YakBoard

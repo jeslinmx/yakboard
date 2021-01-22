@@ -29,7 +29,7 @@ export default function YakBoard({
     }
   
     return (
-      <Card bg="light">
+      <Card bg="light" className="mt-3">
         <Card.Header>
           <Card.Title className="text-center">{name}</Card.Title>
         </Card.Header>
