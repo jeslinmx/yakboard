@@ -13,17 +13,17 @@
 // - help page
 
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { fromJS, Seq } from 'immutable';
+import { fromJS } from 'immutable';
 import { useEffect, useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
-import { v4 as uuidv4 } from 'uuid';
 import YakBoard from './YakBoard';
+import { BlankBoards } from './Blank';
 
 function App(props) {
   let [data, setData] = useState(fromJS(
     (
       JSON.parse(localStorage.getItem('boards'))
-      || Seq(['Waiting', 'In Progress', 'Completed']).map(name => ({name, cards: {}})).toKeyedSeq().flip().map(value => uuidv4()).flip().toJS()
+      || BlankBoards()
     ),
     (key, value) => (!key || key === 'cards') ? value.toOrderedMap() : value.toMap()
   ));

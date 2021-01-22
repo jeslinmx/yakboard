@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { noop, TooltipButton } from "./Misc";
 import {v4 as uuidv4} from 'uuid';
 import { Card } from "react-bootstrap";
 import YakCard from "./YakCard";
+import { BlankCard } from "./Blank";
 
 export default function YakBoard({
     uuid,
@@ -12,21 +12,9 @@ export default function YakBoard({
     onDeleteCard = noop, // (boardUuid, cardUuid) - called when a card on this board triggers its onDelete event
   }) {
   
-    let [newCard, setNewCard] = useState(false);
-  
-    function handleAddCard() {
-      setNewCard(uuidv4());
-    }
-    function handleSaveCard(cardUuid, cardData) {
-      onSaveCard(uuid, cardUuid, cardData);
-      setNewCard(false);
-    }
-    function handleCancelNewCard() {
-      setNewCard(false);
-    }
-    function handleDeleteCard(cardUuid) {
-      onDeleteCard(uuid, cardUuid);
-    }
+    let handleAddCard = () => onSaveCard(uuid, uuidv4(), BlankCard().set("isNew", true));
+    let handleSaveCard = (cardUuid, cardData) => onSaveCard(uuid, cardUuid, cardData);
+    let handleDeleteCard = (cardUuid) => onDeleteCard(uuid, cardUuid);
   
     return (
       <Card bg="light" className="mt-3">
@@ -35,26 +23,18 @@ export default function YakBoard({
         </Card.Header>
         <Card.Body>
           {cards.map((card, uuid) => 
-            <YakCard
-              key={uuid}
+            <YakCard key={uuid}
               uuid={uuid} title={card.get('title')} content={card.get('content')}
-              onSave={handleSaveCard}
-              onDelete={handleDeleteCard}
+              isNew={card.has("isNew")}
+              onSave={handleSaveCard} onDelete={handleDeleteCard}
             />
           ).toList()}
-          {newCard ?
-          <YakCard
-            isNew key={newCard}
-            uuid={newCard}
-            onSave={handleSaveCard} onCancel={handleCancelNewCard}
-          />
-          : <TooltipButton
-            tooltip="Add new card" placement="bottom"
+          <TooltipButton
             block variant="outline-secondary" size="lg"
+            tooltip="Add new card" placement="bottom"
             onClick={handleAddCard}
             children="+"
           />
-          }
         </Card.Body>
       </Card>
     );
