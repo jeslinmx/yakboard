@@ -51,47 +51,50 @@ export default function YakCard({
     return (
       <Card className="mb-3" onBlur={handleBlur}>
         <Card.Header>
-          <InputGroup>
-            {editing ?
-              <Form.Control
-                type="text"
-                key="editing" autoFocus={isNew} placeholder="Title" defaultValue={title}
-                ref={titleInput}
-              />
-              : <Form.Control
-                type="text"
-                key="static" plaintext readOnly value={title}
-              />
-            }
-            <InputGroup.Append>
+          <Form>
+            <InputGroup>
               {editing ?
-                <>
-                  <TooltipButton
-                    tooltip="Cancel edits"
-                    variant="outline-danger"
-                    onClick={handleCancel}
-                    children={<X />}
-                  />
-                  <TooltipButton
-                    tooltip="Save edits"
-                    variant="success"
-                    onClick={handleSave}
-                    children={<Check />}
-                  />
-                </>
-                : <MoreActionsButton
-                  variant="light"
-                  buttonChildren={<ThreeDotsVertical />}
-                  popoverChildren={
-                    <>
-                      <TooltipButton tooltip="Edit card" variant="info" onClick={handleEdit} children={<PencilFill />} />
-                      <TooltipButton tooltip="Delete card" variant="danger" onClick={handleDelete} children={<TrashFill />} />
-                    </>
-                  }
+                <Form.Control
+                  type="text"
+                  key="editing" autoFocus={isNew} placeholder="Title" defaultValue={title}
+                  ref={titleInput}
+                />
+                : <Form.Control
+                  type="text"
+                  key="static" plaintext readOnly value={title}
                 />
               }
-            </InputGroup.Append>
-          </InputGroup>
+              <InputGroup.Append>
+                {editing ?
+                  <>
+                    <TooltipButton
+                      tooltip="Cancel edits"
+                      variant="outline-danger"
+                      onClick={handleCancel}
+                      children={<X />}
+                    />
+                    <TooltipButton
+                      tooltip="Save edits"
+                      variant="success"
+                      type="submit"
+                      onClick={handleSave}
+                      children={<Check />}
+                    />
+                  </>
+                  : <MoreActionsButton
+                    variant="light"
+                    buttonChildren={<ThreeDotsVertical />}
+                    popoverChildren={
+                      <>
+                        <TooltipButton tooltip="Edit card" variant="info" onClick={handleEdit} children={<PencilFill />} />
+                        <TooltipButton tooltip="Delete card" variant="danger" onClick={handleDelete} children={<TrashFill />} />
+                      </>
+                    }
+                  />
+                }
+              </InputGroup.Append>
+            </InputGroup>
+          </Form>
         </Card.Header>
         {/* hide card body if there is no content and we are not editing */}
         {(content || editing) ?
