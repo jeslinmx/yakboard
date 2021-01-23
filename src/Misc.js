@@ -1,5 +1,6 @@
 import { createRef, useState } from "react";
 import { Button, ButtonGroup, Overlay, OverlayTrigger, Popover, Tooltip } from "react-bootstrap";
+import { ThreeDotsVertical } from "react-bootstrap-icons";
 
 let noop = () => {};
 
@@ -12,23 +13,30 @@ function TooltipButton({
   children, // the children are placed in the Button
   ...restProps // all other attributes are set on the Button
 }) {
-  return (<OverlayTrigger placement={placement} overlay={<Tooltip>{tooltip}</Tooltip>} delay={delay} trigger={trigger} transition={transition}>
-    {({ref, ...triggerHandler}) => (
-        <Button ref={ref} {...triggerHandler} {...restProps}>{children}</Button>
-    )}
-  </OverlayTrigger>);
+  return (
+    <OverlayTrigger
+      placement={placement} delay={delay} trigger={trigger} transition={transition}
+      overlay={<Tooltip>{tooltip}</Tooltip>}
+    >
+      {({ref, ...triggerHandler}) => (
+          <Button ref={ref} {...triggerHandler} {...restProps}>{children}</Button>
+      )}
+    </OverlayTrigger>
+  );
 }
 
 function MoreActionsButton({
-  popoverChildren,
-  buttonChildren,
+  children,
+  buttonChildren = <ThreeDotsVertical />,
   ...restProps
 }) {
+  // states
   let [show, setShow] = useState(false);
+  // refs
   let buttonRef = createRef();
   let popoverRef = createRef();
-
-  function handleBlur(e) {
+  // handlers
+  let handleBlur = (e) => {
     if (
       show
       && !buttonRef.current.contains(e.relatedTarget)
@@ -47,13 +55,20 @@ function MoreActionsButton({
 
   return (
     <>
-      <Button ref={buttonRef} onBlur={handleBlur} onClick={() => setShow(!show)} {...restProps}>
+      <Button
+        onBlur={handleBlur} onClick={() => setShow(!show)}
+        ref={buttonRef}
+        {...restProps}
+      >
         {buttonChildren}
       </Button>
-      <Overlay target={buttonRef} show={show} placement="left" transition={false}>
+      <Overlay
+        show={show} placement="left" transition={false}
+        target={buttonRef}
+      >
         <Popover>
-          <ButtonGroup ref={popoverRef} onBlur={handleBlur}>
-            {popoverChildren}
+          <ButtonGroup onBlur={handleBlur} ref={popoverRef}>
+            {children}
           </ButtonGroup>
         </Popover>
       </Overlay>

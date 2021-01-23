@@ -11,7 +11,7 @@ export default function YakBoard({
     onSaveCard = noop, // (boardUuid, cardUuid, cardData) - called when a card on this board triggers its onSave event
     onDeleteCard = noop, // (boardUuid, cardUuid) - called when a card on this board triggers its onDelete event
   }) {
-  
+    // handlers
     let handleAddCard = () => onSaveCard(uuid, uuidv4(), BlankCard().set("isNew", true));
     let handleSaveCard = (cardUuid, cardData) => onSaveCard(uuid, cardUuid, cardData);
     let handleDeleteCard = (cardUuid) => onDeleteCard(uuid, cardUuid);
