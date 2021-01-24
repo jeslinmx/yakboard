@@ -1,18 +1,17 @@
 import { noop, TooltipButton } from "./Misc";
-import {v4 as uuidv4} from 'uuid';
 import { Card } from "react-bootstrap";
 import YakCard from "./YakCard";
-import { BlankCard } from "./Blank";
 
 export default function YakBoard({
     uuid,
     name,
     cards,
+    onAddCard = noop, // (boardUuid) - called when a new card is added to this board
     onSaveCard = noop, // (boardUuid, cardUuid, cardData) - called when a card on this board triggers its onSave event
     onDeleteCard = noop, // (boardUuid, cardUuid) - called when a card on this board triggers its onDelete event
   }) {
     // handlers
-    let handleAddCard = () => onSaveCard(uuid, uuidv4(), BlankCard().set("isNew", true));
+    let handleAddCard = () => onAddCard(uuid);
     let handleSaveCard = (cardUuid, cardData) => onSaveCard(uuid, cardUuid, cardData);
     let handleDeleteCard = (cardUuid) => onDeleteCard(uuid, cardUuid);
   

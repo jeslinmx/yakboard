@@ -1,9 +1,14 @@
 import { ButtonGroup, Form, InputGroup, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { ArrowClockwise, ArrowCounterclockwise, FunnelFill, Github } from "react-bootstrap-icons";
-import { TooltipButton } from "./Misc";
+import { noop, TooltipButton } from "./Misc";
 
 // github
-export default function ActionBar() {
+export default function ActionBar({
+    disableUndo,
+    disableRedo,
+    onUndo = noop,
+    onRedo = noop,
+}) {
     return (
         <Navbar
             bg='light' variant='light' fixed='top'
@@ -16,8 +21,8 @@ export default function ActionBar() {
             </Nav>
             <Form inline>
                 <ButtonGroup>
-                    <TooltipButton variant='light' placement='bottom' tooltip='Undo'><ArrowCounterclockwise /></TooltipButton>
-                    <TooltipButton variant='light' placement='bottom' tooltip='Redo'><ArrowClockwise /></TooltipButton>
+                    <TooltipButton variant='light' placement='bottom' tooltip='Undo' disabled={disableUndo} onClick={onUndo}><ArrowCounterclockwise /></TooltipButton>
+                    <TooltipButton variant='light' placement='bottom' tooltip='Redo' disabled={disableRedo} onClick={onRedo}><ArrowClockwise /></TooltipButton>
                 </ButtonGroup>
             </Form>
             <Form inline className='ml-auto'>
