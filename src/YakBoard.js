@@ -1,17 +1,20 @@
-import { noop, TooltipButton } from "./Misc";
+import { useState } from "react";
 import { Card } from "react-bootstrap";
+import { noop, TooltipButton } from "./Misc";
 import YakCard from "./YakCard";
 
 export default function YakBoard({
     uuid,
     name,
     cards,
-    onAddCard = noop, // (boardUuid) - called when a new card is added to this board
+    onAddCard = noop, // (boardUuid, cardData) - called when a new card is added to this board
     onSaveCard = noop, // (boardUuid, cardUuid, cardData) - called when a card on this board triggers its onSave event
     onDeleteCard = noop, // (boardUuid, cardUuid) - called when a card on this board triggers its onDelete event
   }) {
+    // states
+    let [editingNewCard, setEditingNewCard] = useState(false);
     // handlers
-    let handleAddCard = () => onAddCard(uuid);
+    let handleAddCard = (_, cardData) => { onAddCard(uuid, cardData); setEditingNewCard(false); }
     let handleSaveCard = (cardUuid, cardData) => onSaveCard(uuid, cardUuid, cardData);
     let handleDeleteCard = (cardUuid) => onDeleteCard(uuid, cardUuid);
   
@@ -24,16 +27,20 @@ export default function YakBoard({
           {cards.map((card, uuid) => 
             <YakCard key={uuid}
               uuid={uuid} title={card.get('title')} content={card.get('content')}
-              isNew={card.has("isNew")}
               onSave={handleSaveCard} onDelete={handleDeleteCard}
             />
           ).toList()}
-          <TooltipButton
-            block variant="outline-secondary" size="lg"
-            tooltip="Add new card" placement="bottom"
-            onClick={handleAddCard}
-            children="+"
-          />
+          {editingNewCard ?
+            <YakCard isNew
+              onSave={handleAddCard} onDelete={() => setEditingNewCard(false)}
+            />
+            : <TooltipButton
+              block variant="outline-secondary" size="lg"
+              tooltip="Add new card" placement="bottom"
+              onClick={() => setEditingNewCard(true)}
+              children="+"
+            />
+          }
         </Card.Body>
       </Card>
     );

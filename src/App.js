@@ -1,6 +1,4 @@
 // TODO:
-// - undo
-// - dark theme
 // - filter
 // - move cards
 // - add lists
@@ -11,6 +9,7 @@
 // - tags rendering
 // - checkbox 2-way flow
 // - help page
+// - dark theme
 // - what other ui toolkits?
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -19,7 +18,7 @@ import { useEffect, useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import { v4 as uuidv4 } from 'uuid';
 import YakBoard from './YakBoard';
-import { BlankBoards, BlankCard } from './Blank';
+import { BlankBoards } from './Blank';
 import ActionBar from './ActionBar';
 
 function App(props) {
@@ -40,7 +39,7 @@ function App(props) {
   // handlers
   let execute = (operation, isNewOperation = true) => {
     if (operation.type === 'add') {
-      setData(prevData => prevData.setIn(operation.location, BlankCard()));
+      setData(prevData => prevData.setIn(operation.location, operation.data));
     } else if (operation.type === 'save') {
       operation.oldData = data.getIn(operation.location);
       setData(prevData => prevData.setIn(operation.location, operation.data));
@@ -61,9 +60,10 @@ function App(props) {
     oldData: operation.data,
   });
 
-  let handleAddCard = (boardUuid) => execute({
+  let handleAddCard = (boardUuid, cardData) => execute({
     type: 'add',
     location: [boardUuid, 'cards', uuidv4()],
+    data: cardData,
   });
   let handleSaveCard = (boardUuid, cardUuid, cardData) => execute({
     type: 'save',

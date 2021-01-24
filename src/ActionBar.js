@@ -19,10 +19,10 @@ export default function ActionBar({
                     <NavDropdown.Item href='#'>Nothing here yet...</NavDropdown.Item>
                 </NavDropdown>
             </Nav>
-            <Form inline>
+            <Form inline className='ml-2'>
                 <ButtonGroup>
-                    <TooltipButton variant='light' placement='bottom' tooltip='Undo' disabled={disableUndo} onClick={onUndo}><ArrowCounterclockwise /></TooltipButton>
-                    <TooltipButton variant='light' placement='bottom' tooltip='Redo' disabled={disableRedo} onClick={onRedo}><ArrowClockwise /></TooltipButton>
+                    <TooltipButton variant='link' size='sm' placement='bottom' tooltip='Undo' disabled={disableUndo} onClick={onUndo}><ArrowCounterclockwise /></TooltipButton>
+                    <TooltipButton variant='link' size='sm' placement='bottom' tooltip='Redo' disabled={disableRedo} onClick={onRedo}><ArrowClockwise /></TooltipButton>
                 </ButtonGroup>
             </Form>
             <Form inline className='ml-auto'>
