@@ -1,17 +1,17 @@
 // TODO:
-// - markdown side effect
-// - move cards
 // - undo
+// - dark theme
+// - filter
+// - move cards
 // - add lists
 // - edit list names
 // - rearrange lists
 // - keyboard shortcuts
-// - dark theme
-// - shameless self-promotion
 // - markdown rendering
 // - tags rendering
 // - checkbox 2-way flow
 // - help page
+// - what other ui toolkits?
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { fromJS } from 'immutable';
@@ -19,6 +19,7 @@ import { useEffect, useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import YakBoard from './YakBoard';
 import { BlankBoards } from './Blank';
+import ActionBar from './ActionBar';
 
 function App(props) {
   // states
@@ -38,18 +39,21 @@ function App(props) {
   let handleDeleteCard = (boardUuid, cardUuid) => setData(prevData => prevData.deleteIn([boardUuid, 'cards', cardUuid]));
 
   return (
-    <Container fluid>
-      <Row>
-        {data.map((board, uuid) => 
-          <Col xs={12} md={6} lg={4} xl={3} key={uuid}>
-            <YakBoard
-              uuid={uuid} name={board.get('name')} cards={board.get('cards')}
-              onSaveCard={handleSaveCard} onDeleteCard={handleDeleteCard}
-            />
-          </Col>
-        ).toList()}
-      </Row>
-    </Container>
+    <>
+      <ActionBar />
+      <Container fluid className='pt-5'>
+        <Row>
+          {data.map((board, uuid) => 
+            <Col xs={12} md={6} lg={4} xl={3} key={uuid}>
+              <YakBoard
+                uuid={uuid} name={board.get('name')} cards={board.get('cards')}
+                onSaveCard={handleSaveCard} onDeleteCard={handleDeleteCard}
+              />
+            </Col>
+          ).toList()}
+        </Row>
+      </Container>
+    </>
   );
 }
 

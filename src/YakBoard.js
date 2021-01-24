@@ -17,7 +17,7 @@ export default function YakBoard({
     let handleDeleteCard = (cardUuid) => onDeleteCard(uuid, cardUuid);
   
     return (
-      <Card bg="light" className="mt-3">
+      <Card bg="light" className="mt-4">
         <Card.Header>
           <Card.Title className="text-center">{name}</Card.Title>
         </Card.Header>
