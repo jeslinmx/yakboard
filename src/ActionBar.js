@@ -8,7 +8,12 @@ export default function ActionBar({
   disableRedo,
   onUndo = noop,
   onRedo = noop,
+  filter,
+  onFilterChange = noop, // (filter) - called when the filter input changes
 }) {
+  // handlers
+  let handleFilterChange = (e) => onFilterChange(e.target.value);
+
   return (
     <Navbar
       bg='light' variant='light' fixed='top'
@@ -37,7 +42,10 @@ export default function ActionBar({
       </Form>
       <Form inline className='ml-auto'>
         <InputGroup className='ml-2'>
-          <Form.Control type='text' placeholder='Filter' />
+          <Form.Control
+            type='text' placeholder='Filter'
+            value={filter} onChange={handleFilterChange}
+          />
           <InputGroup.Append>
             <InputGroup.Text><FunnelFill /></InputGroup.Text>
           </InputGroup.Append>

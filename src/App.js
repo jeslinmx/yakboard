@@ -1,5 +1,4 @@
 // TODO:
-// - filter
 // - move cards
 // - add lists
 // - edit list names
@@ -21,17 +20,21 @@ import YakBoard from './YakBoard';
 import { BlankBoards } from './Blank';
 import ActionBar from './ActionBar';
 
+
 function App(props) {
-  // states
-  let [data, setData] = useState(fromJS(
+  // read data from persistent storage
+  let initialData = fromJS(
     (
       JSON.parse(localStorage.getItem('boards'))
       || BlankBoards()
     ),
     (key, value) => (!key || key === 'cards') ? value.toOrderedMap() : value.toMap()
-  ));
+  );
+  // states
+  let [data, setData] = useState(initialData);
   let [undoStack, setUndoStack] = useState(Stack());
   let [redoStack, setRedoStack] = useState(Stack());
+  let [filterValue, setFilterValue] = useState('');
   // effects
   useEffect(() => {
     localStorage.setItem('boards', JSON.stringify(data.toJS()));
@@ -85,13 +88,17 @@ function App(props) {
     execute(operation, false);
     setUndoStack(prevStack => prevStack.push(operation));
     setRedoStack(prevStack => prevStack.pop());
-  }
+  };
+  let handleFilterChange = (filter) => {
+    setFilterValue(filter);
+  };
 
   return (
     <>
       <ActionBar
         disableUndo={undoStack.size <= 0} disableRedo={redoStack.size <= 0}
         onUndo={handleUndo} onRedo={handleRedo}
+        filter={filterValue} onFilterChange={handleFilterChange}
       />
       <Container fluid className='pt-5'>
         <Row>
@@ -99,6 +106,7 @@ function App(props) {
             <Col xs={12} md={6} lg={4} xl={3} key={uuid}>
               <YakBoard
                 uuid={uuid} name={board.get('name')} cards={board.get('cards')}
+                filter={filterValue}
                 onAddCard={handleAddCard} onSaveCard={handleSaveCard} onDeleteCard={handleDeleteCard}
               />
             </Col>
