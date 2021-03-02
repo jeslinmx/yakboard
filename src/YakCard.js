@@ -1,4 +1,5 @@
 import { createRef, useState } from "react";
+import { Draggable } from "react-beautiful-dnd";
 import { Card, Form, InputGroup } from "react-bootstrap";
 import { Check, PencilFill, TrashFill, X } from "react-bootstrap-icons";
 import { MoreActionsButton, noop, TooltipButton } from "./Misc";
@@ -6,6 +7,7 @@ import { MoreActionsButton, noop, TooltipButton } from "./Misc";
 export default function YakCard({
     uuid,
     title,
+    index = null, // required for react-beautiful-dnd Draggable
     content, // content of card, will be rendered into markdown
     isNew = false, // if true, the card is created in edit mode, with focus on the title field
     onSave = noop, // (cardUuid, cardData) - called when the card loses focus in editing mode, or the save button is clicked
@@ -41,68 +43,74 @@ export default function YakCard({
     let contentInput = createRef(); // this gives us the ability to cancel just by...cancelling
 
     return (
-      <Card className="mb-3" onBlur={handleBlur}>
-        <Card.Header>
-          <Form>
-            <InputGroup>
-              {editing ?
-                <Form.Control key="editing"
-                  type="text"
-                  defaultValue={title} placeholder="Title" autoFocus={isNew}
-                  ref={titleInput}
-                />
-                : <Form.Control key="static"
-                  type="text"
-                  value={title} plaintext readOnly
-                />
+      <Draggable draggableId={uuid} index={index}>
+        {(provided) => (
+          <div ref={provided.innerRef} {...provided.draggableProps}>
+            <Card className="mb-3" onBlur={handleBlur}>
+              <Card.Header {...provided.dragHandleProps}>
+                <Form>
+                  <InputGroup>
+                    {editing ?
+                      <Form.Control key="editing"
+                        type="text"
+                        defaultValue={title} placeholder="Title" autoFocus={isNew}
+                        ref={titleInput}
+                      />
+                      : <Form.Control key="static"
+                        type="text"
+                        value={title} plaintext readOnly
+                      />
+                    }
+                    <InputGroup.Append>
+                      {editing ?
+                        <>
+                          <TooltipButton
+                            tooltip="Cancel edits"
+                            variant="outline-danger"
+                            onClick={handleCancel}
+                            children={<X />}
+                          />
+                          <TooltipButton
+                            tooltip="Save edits"
+                            variant="success"
+                            type="submit"
+                            onClick={handleSave}
+                            children={<Check />}
+                          />
+                        </>
+                        : <MoreActionsButton variant="light">
+                          <TooltipButton tooltip="Edit card" variant="info" onClick={handleEdit} children={<PencilFill />} />
+                          <TooltipButton tooltip="Delete card" variant="danger" onClick={handleDelete} children={<TrashFill />} />
+                        </MoreActionsButton>
+                      }
+                    </InputGroup.Append>
+                  </InputGroup>
+                </Form>
+              </Card.Header>
+              {(content || editing) ?
+                <Card.Body>
+                  {editing ?
+                    <Form.Control
+                      as="textarea" rows={4}
+                      defaultValue={content} placeholder="Details"
+                      autoFocus={!isNew}
+                      ref={contentInput}
+                    />
+                    : <>
+                      <Card.Text>{content}</Card.Text>
+                      {/* <Card.Text>
+                        {props.tags.map(tag =>
+                          <Badge variant="secondary" key="tag">{tag}</Badge>
+                        )}
+                      </Card.Text> */}
+                    </>
+                  }
+                </Card.Body>
+                : null
               }
-              <InputGroup.Append>
-                {editing ?
-                  <>
-                    <TooltipButton
-                      tooltip="Cancel edits"
-                      variant="outline-danger"
-                      onClick={handleCancel}
-                      children={<X />}
-                    />
-                    <TooltipButton
-                      tooltip="Save edits"
-                      variant="success"
-                      type="submit"
-                      onClick={handleSave}
-                      children={<Check />}
-                    />
-                  </>
-                  : <MoreActionsButton variant="light">
-                    <TooltipButton tooltip="Edit card" variant="info" onClick={handleEdit} children={<PencilFill />} />
-                    <TooltipButton tooltip="Delete card" variant="danger" onClick={handleDelete} children={<TrashFill />} />
-                  </MoreActionsButton>
-                }
-              </InputGroup.Append>
-            </InputGroup>
-          </Form>
-        </Card.Header>
-        {(content || editing) ?
-          <Card.Body>
-            {editing ?
-              <Form.Control
-                as="textarea" rows={4}
-                defaultValue={content} placeholder="Details"
-                autoFocus={!isNew}
-                ref={contentInput}
-              />
-              : <>
-                <Card.Text>{content}</Card.Text>
-                {/* <Card.Text>
-                  {props.tags.map(tag =>
-                    <Badge variant="secondary" key="tag">{tag}</Badge>
-                  )}
-                </Card.Text> */}
-              </>
-            }
-          </Card.Body>
-          : null
-        }
-      </Card>
+            </Card>
+          </div>
+        )}
+        </Draggable>
     );
   }

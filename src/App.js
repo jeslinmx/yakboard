@@ -19,6 +19,7 @@ import { v4 as uuidv4 } from 'uuid';
 import YakBoard from './YakBoard';
 import { BlankBoards } from './Blank';
 import ActionBar from './ActionBar';
+import { DragDropContext } from 'react-beautiful-dnd';
 
 
 function App(props) {
@@ -56,6 +57,11 @@ function App(props) {
         draft.boardContents[operation.boardUuid].cards.splice(operation.index, 1);
         delete draft.cardContents[operation.cardUuid];
       }));
+    } else if (operation.type === 'move') {
+      setData(produce(draft => {
+        draft.boardContents[operation.data.droppableId].cards.splice(operation.data.index, 0, operation.cardUuid);
+        draft.boardContents[operation.oldData.droppableId].cards.splice(operation.oldData.index, 1);
+      }))
     }
     console.log(operation);
     if (isNewOperation) {
@@ -67,7 +73,7 @@ function App(props) {
   };
   let reverseOperation = operation => ({
     ...operation,
-    type: { 'add': 'delete', 'delete': 'add', 'save': 'save' }[operation.type],
+    type: { 'add': 'delete', 'delete': 'add', 'save': 'save', 'move': 'move' }[operation.type],
     data: operation.oldData,
     oldData: operation.data,
   });
@@ -106,9 +112,26 @@ function App(props) {
   let handleFilterChange = (filter) => {
     setFilterValue(filter);
   };
+  let handleDragEnd = ({destination, source, draggableId}) => {
+    if (!destination) {
+      return;
+    }
+    if (
+      destination.droppableId === source.droppableId
+      && destination.index === source.index
+    ) {
+      return;
+    }
+    execute({
+      type: 'move',
+      cardUuid: draggableId,
+      data: destination,
+      oldData: source,
+    })
+  }
 
   return (
-    <>
+    <DragDropContext onDragEnd={handleDragEnd}>
       <ActionBar
         disableUndo={stack.undo.length <= 0} disableRedo={stack.redo.length <= 0}
         onUndo={handleUndo} onRedo={handleRedo}
@@ -130,7 +153,7 @@ function App(props) {
           )}
         </Row>
       </Container>
-    </>
+    </DragDropContext>
   );
 }
 

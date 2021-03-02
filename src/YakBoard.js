@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Droppable } from "react-beautiful-dnd";
 import { Card } from "react-bootstrap";
 import { noop, TooltipButton } from "./Misc";
 import YakCard from "./YakCard";
@@ -21,33 +22,40 @@ export default function YakBoard({
     let handleDeleteCard = (cardUuid) => onDeleteCard(uuid, cardUuid);
   
     return (
-      <Card bg="light" className="mt-4">
-        <Card.Header>
-          <Card.Title className="text-center">{name}</Card.Title>
-        </Card.Header>
-        <Card.Body>
-          {cards.filter(
-            uuid => cardContents[uuid].title.indexOf(filter) !== -1
-            || cardContents[uuid].content.indexOf(filter) !== -1
-          ).map(uuid => 
-            <YakCard
-              key={uuid} uuid={uuid}
-              title={cardContents[uuid].title} content={cardContents[uuid].content}
-              onSave={handleSaveCard} onDelete={handleDeleteCard}
-            />
-          )}
-          {editingNewCard ?
-            <YakCard isNew
-              onSave={handleAddCard} onDelete={() => setEditingNewCard(false)}
-            />
-            : <TooltipButton
-              block variant="outline-secondary" size="lg"
-              tooltip="Add new card" placement="bottom"
-              onClick={() => setEditingNewCard(true)}
-              children="+"
-            />
-          }
-        </Card.Body>
-      </Card>
+      <Droppable droppableId={uuid}>
+        {(provided) => (
+          <div ref={provided.innerRef} {...provided.droppableProps}>
+            <Card bg="light" className="mt-4">
+              <Card.Header>
+                <Card.Title className="text-center">{name}</Card.Title>
+              </Card.Header>
+              <Card.Body>
+                {cards.filter(
+                  uuid => cardContents[uuid].title.indexOf(filter) !== -1
+                  || cardContents[uuid].content.indexOf(filter) !== -1
+                ).map((uuid, index) => 
+                  <YakCard
+                    key={uuid} uuid={uuid} index={index}
+                    title={cardContents[uuid].title} content={cardContents[uuid].content}
+                    onSave={handleSaveCard} onDelete={handleDeleteCard}
+                  />
+                )}
+                {editingNewCard ?
+                  <YakCard isNew
+                    onSave={handleAddCard} onDelete={() => setEditingNewCard(false)}
+                  />
+                  : <TooltipButton
+                    block variant="outline-secondary" size="lg"
+                    tooltip="Add new card" placement="bottom"
+                    onClick={() => setEditingNewCard(true)}
+                    children="+"
+                  />
+                }
+              </Card.Body>
+            </Card>
+            {provided.placeholder}
+          </div>
+        )}
+      </Droppable>
     );
   }
