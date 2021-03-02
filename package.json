@@ -8,7 +8,7 @@
     "@testing-library/react": "^11.2.3",
     "@testing-library/user-event": "^12.6.0",
     "bootstrap": "^4.5.3",
-    "immutable": "^4.0.0-rc.12",
+    "immer": "^8.0.1",
     "react": "^16.14.0",
     "react-beautiful-dnd": "^13.0.0",
     "react-bootstrap": "^1.4.3",

@@ -12,9 +12,9 @@
 // - what other ui toolkits?
 
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { fromJS, Stack } from 'immutable';
 import { useEffect, useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
+import produce from 'immer';
 import { v4 as uuidv4 } from 'uuid';
 import YakBoard from './YakBoard';
 import { BlankBoards } from './Blank';
@@ -23,71 +23,85 @@ import ActionBar from './ActionBar';
 
 function App(props) {
   // read data from persistent storage
-  let initialData = fromJS(
-    (
-      JSON.parse(localStorage.getItem('boards'))
-      || BlankBoards()
-    ),
-    (key, value) => (!key || key === 'cards') ? value.toOrderedMap() : value.toMap()
-  );
+  let initialData = JSON.parse(localStorage.getItem('boards')) || BlankBoards();
   // states
   let [data, setData] = useState(initialData);
-  let [undoStack, setUndoStack] = useState(Stack());
-  let [redoStack, setRedoStack] = useState(Stack());
+  let [stack, setStack] = useState({
+    undo: [],
+    redo: []
+  });
   let [filterValue, setFilterValue] = useState('');
+  console.log(data)
   // effects
   useEffect(() => {
-    localStorage.setItem('boards', JSON.stringify(data.toJS()));
+    localStorage.setItem('boards', JSON.stringify(data));
   }, [data]);
   // handlers
   let execute = (operation, isNewOperation = true) => {
+    operation = {...operation};
     if (operation.type === 'add') {
-      setData(prevData => prevData.setIn(operation.location, operation.data));
+      setData(produce(draft => {
+        draft.boardContents[operation.boardUuid].cards.splice(operation.index || Number.MAX_SAFE_INTEGER, 0, operation.cardUuid);
+        draft.cardContents[operation.cardUuid] = operation.data;
+      }));
     } else if (operation.type === 'save') {
-      operation.oldData = data.getIn(operation.location);
-      setData(prevData => prevData.setIn(operation.location, operation.data));
+      operation.oldData = data.cardContents[operation.cardUuid];
+      setData(produce(draft => {
+        draft.cardContents[operation.cardUuid] = operation.data;
+      }));
     } else if (operation.type === 'delete') {
-      operation.oldData = data.getIn(operation.location);
-      setData(prevData => prevData.deleteIn(operation.location));
+      operation.oldData = data.cardContents[operation.cardUuid];
+      operation.index = data.boardContents[operation.boardUuid].cards.indexOf(operation.cardUuid);
+      setData(produce(draft => {
+        draft.boardContents[operation.boardUuid].cards.splice(operation.index, 1);
+        delete draft.cardContents[operation.cardUuid];
+      }));
     }
     console.log(operation);
     if (isNewOperation) {
-      setUndoStack(prevStack => prevStack.push(operation));
-      setRedoStack(redoStack.clear());
+      setStack(produce(draft => {
+        draft.undo.push(operation);
+        draft.redo = [];
+      }));
     }
   };
   let reverseOperation = operation => ({
-    type: { 'add': 'delete', 'delete': 'save', 'save': 'save' }[operation.type],
-    location: operation.location,
+    ...operation,
+    type: { 'add': 'delete', 'delete': 'add', 'save': 'save' }[operation.type],
     data: operation.oldData,
     oldData: operation.data,
   });
 
   let handleAddCard = (boardUuid, cardData) => execute({
     type: 'add',
-    location: [boardUuid, 'cards', uuidv4()],
+    boardUuid,
+    cardUuid: uuidv4(),
     data: cardData,
   });
   let handleSaveCard = (boardUuid, cardUuid, cardData) => execute({
     type: 'save',
-    location: [boardUuid, 'cards', cardUuid],
+    boardUuid,
+    cardUuid,
     data: cardData,
   });
   let handleDeleteCard = (boardUuid, cardUuid) => execute({
     type: 'delete',
-    location: [boardUuid, 'cards', cardUuid],
+    boardUuid,
+    cardUuid,
   });
   let handleUndo = () => {
-    let operation = undoStack.peek();
+    let operation = stack.undo[stack.undo.length - 1];
     execute(reverseOperation(operation), false);
-    setUndoStack(prevStack => prevStack.pop());
-    setRedoStack(prevStack => prevStack.push(operation));
+    setStack(produce(draft => {
+      draft.redo.push(draft.undo.pop())
+    }));
   };
   let handleRedo = () => {
-    let operation = redoStack.peek();
+    let operation = stack.redo[stack.redo.length - 1];
     execute(operation, false);
-    setUndoStack(prevStack => prevStack.push(operation));
-    setRedoStack(prevStack => prevStack.pop());
+    setStack(produce(draft => {
+      draft.undo.push(draft.redo.pop())
+    }));
   };
   let handleFilterChange = (filter) => {
     setFilterValue(filter);
@@ -96,21 +110,24 @@ function App(props) {
   return (
     <>
       <ActionBar
-        disableUndo={undoStack.size <= 0} disableRedo={redoStack.size <= 0}
+        disableUndo={stack.undo.length <= 0} disableRedo={stack.redo.length <= 0}
         onUndo={handleUndo} onRedo={handleRedo}
         filter={filterValue} onFilterChange={handleFilterChange}
       />
       <Container fluid className='pt-5'>
         <Row>
-          {data.map((board, uuid) => 
+          {data.boards.map((uuid) => 
             <Col xs={12} md={6} lg={4} xl={3} key={uuid}>
               <YakBoard
-                uuid={uuid} name={board.get('name')} cards={board.get('cards')}
+                uuid={uuid}
+                name={data.boardContents[uuid].name}
+                cards={data.boardContents[uuid].cards}
+                cardContents={data.cardContents}
                 filter={filterValue}
                 onAddCard={handleAddCard} onSaveCard={handleSaveCard} onDeleteCard={handleDeleteCard}
               />
             </Col>
-          ).toList()}
+          )}
         </Row>
       </Container>
     </>

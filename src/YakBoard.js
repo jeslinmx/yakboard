@@ -7,6 +7,7 @@ export default function YakBoard({
     uuid,
     name,
     cards,
+    cardContents,
     filter,
     onAddCard = noop, // (boardUuid, cardData) - called when a new card is added to this board
     onSaveCard = noop, // (boardUuid, cardUuid, cardData) - called when a card on this board triggers its onSave event
@@ -25,12 +26,16 @@ export default function YakBoard({
           <Card.Title className="text-center">{name}</Card.Title>
         </Card.Header>
         <Card.Body>
-          {cards.filter(card => card.get("title").indexOf(filter) !== -1 || card.get("content").indexOf(filter) !== -1).map((card, uuid) => 
-            <YakCard key={uuid}
-              uuid={uuid} title={card.get('title')} content={card.get('content')}
+          {cards.filter(
+            uuid => cardContents[uuid].title.indexOf(filter) !== -1
+            || cardContents[uuid].content.indexOf(filter) !== -1
+          ).map(uuid => 
+            <YakCard
+              key={uuid} uuid={uuid}
+              title={cardContents[uuid].title} content={cardContents[uuid].content}
               onSave={handleSaveCard} onDelete={handleDeleteCard}
             />
-          ).toList()}
+          )}
           {editingNewCard ?
             <YakCard isNew
               onSave={handleAddCard} onDelete={() => setEditingNewCard(false)}

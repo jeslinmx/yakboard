@@ -1,4 +1,3 @@
-import { Map } from "immutable";
 import { createRef, useState } from "react";
 import { Card, Form, InputGroup } from "react-bootstrap";
 import { Check, PencilFill, TrashFill, X } from "react-bootstrap-icons";
@@ -24,10 +23,10 @@ export default function YakCard({
         onDelete(uuid);
       }
       else {
-        onSave(uuid, Map({
+        onSave(uuid, {
           title: titleInput.current.value,
           content: contentInput.current.value,
-        }));
+        });
       }
       setEditing(false);
     };
