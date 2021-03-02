@@ -1,0 +1,22 @@
+{
+  "files": {
+    "main.js": "/yakboard/static/js/main.bb8fadf9.chunk.js",
+    "main.js.map": "/yakboard/static/js/main.bb8fadf9.chunk.js.map",
+    "runtime-main.js": "/yakboard/static/js/runtime-main.beae2d23.js",
+    "runtime-main.js.map": "/yakboard/static/js/runtime-main.beae2d23.js.map",
+    "static/css/2.ae9f1eb3.chunk.css": "/yakboard/static/css/2.ae9f1eb3.chunk.css",
+    "static/js/2.0c069cc7.chunk.js": "/yakboard/static/js/2.0c069cc7.chunk.js",
+    "static/js/2.0c069cc7.chunk.js.map": "/yakboard/static/js/2.0c069cc7.chunk.js.map",
+    "static/js/3.ad0951ba.chunk.js": "/yakboard/static/js/3.ad0951ba.chunk.js",
+    "static/js/3.ad0951ba.chunk.js.map": "/yakboard/static/js/3.ad0951ba.chunk.js.map",
+    "index.html": "/yakboard/index.html",
+    "static/css/2.ae9f1eb3.chunk.css.map": "/yakboard/static/css/2.ae9f1eb3.chunk.css.map",
+    "static/js/2.0c069cc7.chunk.js.LICENSE.txt": "/yakboard/static/js/2.0c069cc7.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.beae2d23.js",
+    "static/css/2.ae9f1eb3.chunk.css",
+    "static/js/2.0c069cc7.chunk.js",
+    "static/js/main.bb8fadf9.chunk.js"
+  ]
+}
